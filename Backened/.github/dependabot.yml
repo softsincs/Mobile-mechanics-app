@@ -1,0 +1,60 @@
+version: 2
+updates:
+  # Enable version updates for Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    pull-request-branch-name:
+      separator: "/"
+    reviewers:
+      - "awais"
+    allow:
+      - dependency-type: "direct"
+    ignore:
+      - dependency-name: "Django"
+        versions: ["6.0"]  # Skip major versions
+      - dependency-name: "isort"
+        versions: ["8"]    # Skip isort 8.x - major breaking changes
+      - dependency-name: "django-filter"
+        versions: ["25"]   # Skip django-filter 25.x - major version
+      - dependency-name: "celery"
+        versions: ["5.4", "5.5", "5.6", "6"]  # Keep at 5.3.4 only
+      - dependency-name: "pillow"
+        versions: ["11", "12"]  # Skip pillow 11+ for now
+      - dependency-name: "safety"
+        versions: ["3"]    # Skip safety 3.x - major version
+      - dependency-name: "whitenoise"
+        versions: ["7"]    # Skip whitenoise 7.x - major version
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    reviewers:
+      - "awais"
+    ignore:
+      - dependency-name: "actions/checkout"
+        versions: ["5", "6", "7"]  # Keep at v4
+      - dependency-name: "actions/setup-python"
+        versions: ["5", "6"]  # Keep at v4
+      - dependency-name: "docker/setup-buildx-action"
+        versions: ["4"]
+      - dependency-name: "docker/login-action"
+        versions: ["4"]
+      - dependency-name: "docker/build-push-action"
+        versions: ["6", "7"]
+      - dependency-name: "codecov/codecov-action"
+        versions: ["5", "6"]
+      - dependency-name: "actions/upload-artifact"
+        versions: ["5", "6", "7"]
+    commit-message:
+      prefix: "ci"

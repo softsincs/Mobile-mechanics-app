@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Charging Info</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        body {
+            background-color: #fce1d4; /* Matching the peach background */
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header-section {
+            margin-bottom: 80px;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .intro-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #666;
+            max-width: 800px;
+            margin-bottom: 10px;
+        }
+
+        .sub-label {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* Steps Layout */
+        .steps-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            padding: 40px 0;
+            margin-top: 20px;
+        }
+
+        .step-item {
+            width: 300px;
+            height: 300px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Lifting circles 1 and 3 */
+        .step-item.high {
+            transform: translateY(-50px);
+        }
+
+        /* Lowering circle 2 */
+        .step-item.low {
+            transform: translateY(50px);
+        }
+
+        .step-number {
+            font-size: 60px;
+            font-weight: 700;
+            color: #fce1d4; /* Faded number color */
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #222;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: #777;
+            line-height: 1.5;
+        }
+
+        /* Arrows Positioning */
+        .arrow {
+            position: absolute;
+            z-index: 1;
+            width: 100px; /* Adjust based on your png size */
+            height: auto;
+        }
+
+        .arrow-1 {
+            top: 20%;
+            left: 28%;
+        }
+
+        .arrow-2 {
+            bottom: 15%;
+            right: 28%;
+        }
+
+        .footer-tips {
+            margin-top: 120px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 792px) {
+            .steps-wrapper {
+                flex-direction: column;
+                align-items: center;
+                gap: 50px;
+            }
+            .step-item.high, .step-item.low {
+                transform: translateY(0);
+            }
+            .arrow {
+                display: none; /* Arrows usually don't align well on mobile stacks */
+            }
+            .footer-tips {
+                margin-top: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <h2>Evaluate the Charging Speed and Efficiency of Battery</h2>
+        <p class="intro-text">
+            If you often have to face power cuts then, a quick charging feature can be very handy. Not all batteries can charge at the same speed, which means your backup system could be ready after an outage sooner than later.
+        </p>
+        <p class="sub-label">Charging Efficiency Tips ;</p>
+    </div>
+
+    <div class="steps-wrapper">
+        <!-- Circle 01 -->
+        <div class="step-item high">
+            <div class="step-number">01</div>
+            <div class="step-title">Standard Charging</div>
+            <div class="step-desc">Most backup batteries recharge completely in 4-6 hours.</div>
+        </div>
+
+        <!-- Arrow 1 -->
+        <img src="arrow1.png" alt="arrow" class="arrow arrow-1">
+
+        <!-- Circle 02 -->
+        <div class="step-item low">
+            <div class="step-number">02</div>
+            <div class="step-title">Quick charging capabilities</div>
+            <div class="step-desc">Select lithium-ion pack models have more rapid charge rates, making them more practical for high utilization areas.</div>
+        </div>
+
+        <!-- Arrow 2 -->
+        <img src="arrow2.png" alt="arrow" class="arrow arrow-2">
+
+        <!-- Circle 03 -->
+        <div class="step-item high">
+            <div class="step-number">03</div>
+            <div class="step-title">Self-recharging</div>
+            <div class="step-desc">Go for a battery that self-charges, meaning it will start charging itself immediately after power restoration.</div>
+        </div>
+    </div>
+
+    <div class="footer-tips">
+        <p class="sub-label">Tips ;</p>
+        <p class="intro-text">
+            If you usually experience outages, opt for a fast-charging battery so that it can charge completely before the next outage occurs.
+        </p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Python virtual environment
+venv/
+
+# SQLite database
+db.sqlite3
+
+# Django media and static files
+media/
+staticfiles/
+
+# Pytest cache
+.pytest_cache/
+
+# Logs
+logs/

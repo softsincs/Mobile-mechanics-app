@@ -1,0 +1,231 @@
+Software Requirements Specification for MobileMechanic
+1. Introduction
+1.1 Purpose
+This Software Requirements Specification (SRS) outlines the functional and non-functional requirements for MobileMechanic, a mobile-first platform designed for users in Pakistan to book on-demand car maintenance and repair services at their preferred locations (e.g., home or office). The document serves as a blueprint for developers, designers, and stakeholders to align on system features, technical constraints, and development priorities.
+1.2 Scope
+MobileMechanic enables users to:
+•	Register and manage profiles with vehicle details.
+•	Browse and book car maintenance services (e.g., oil change, tyre repair, battery replacement).
+•	Track assigned mechanics in real-time via maps.
+•	Process secure payments through local gateways (e.g., JazzCash, Easypaisa).
+•	View service history and provide mechanic ratings.
+•	Allow mechanics to register, manage availability, and complete jobs.
+•	Provide admins with a dashboard to oversee bookings, mechanics, and analytics.
+The system includes native iOS/Android apps, a backend with RESTful APIs, and integrations with maps, payment, and notification services.
+1.3 Definitions, Acronyms, and Abbreviations
+•	User/Customer: Vehicle owner using the platform.
+•	Mechanic: Certified professional offering maintenance services.
+•	Admin: Backend operator managing users, bookings, and analytics.
+•	Booking: A scheduled appointment for a car maintenance service.
+•	SLA: Service Level Agreement defining response times and quality standards.
+•	PSP: Payment Service Provider (e.g., JazzCash, Easypaisa).
+•	OTP: One-Time Password for authentication.
+
+1.4 References
+•	Google Maps API: https://developers.google.com/maps
+•	JazzCash API: https://www.jazzcash.com.pk/
+•	Easypaisa API: https://easypaisa.com.pk/
+•	Twilio SMS API: https://www.twilio.com/
+2. Overall Description
+2.1 Product Perspective
+MobileMechanic is a mobile-first platform with:
+•	Frontend: Native iOS and Android apps built with React Native/Flutter for cross-platform compatibility.
+•	Backend: RESTful APIs (Django REST Framework or Node.js/Express) handling authentication, bookings, and dispatch logic.
+•	External Interfaces:
+o	Maps: Google Maps API for location services and mechanic tracking.
+o	Payments: Integration with local PSPs (JazzCash, Easypaisa) and potentially Stripe for future scalability.
+o	Notifications: SMS (Twilio) and push notifications (Firebase Cloud Messaging).
+The system operates as a three-tier architecture: client (mobile apps), server (APIs and database), and external services (maps, payments, notifications).
+2.2 User Needs
+•	Convenience: Schedule services at home or office with minimal effort.
+•	Transparency: View clear pricing, mechanic details, and real-time tracking.
+•	Trust: Certified mechanics, secure payments, and user ratings/reviews.
+•	Accessibility: Support for Urdu/English languages and intuitive UI.
+2.3 Assumptions and Dependencies
+•	Assumptions:
+o	Users have smartphones with internet access (3G/4G or Wi-Fi).
+o	Mechanics are willing to travel to customer locations.
+o	Local regulations allow on-site car maintenance in residential/commercial areas.
+•	Dependencies:
+o	Availability of Google Maps API (or equivalent) for geolocation and tracking.
+o	Reliable integration with local PSPs for payments.
+o	Access to SMS providers (e.g., Twilio) for OTP and notifications.
+3. Functional Requirements
+3.1 User Management
+•	FR-1: Users can sign up/login using phone number with OTP or email/password.
+•	FR-2: Users can create/edit profiles, including vehicle details (make, model, year, last service date).
+•	FR-3: Password reset via OTP sent to registered phone/email.
+3.2 Service Booking Workflow
+•	FR-4: Display a categorized list of services (e.g., oil change, tyre repair) with descriptions and estimated prices.
+•	FR-5: Allow users to input service location via GPS or manual address entry.
+•	FR-6: Enable scheduling with date/time selection and display estimated mechanic arrival time.
+•	FR-7: Send booking confirmation via SMS/push notification.
+3.3 Real-Time Dispatch and Tracking
+•	FR-8: Automatically assign the nearest available mechanic based on location and skills.
+•	FR-9: Provide real-time mechanic tracking in a map view (Google Maps or equivalent).
+•	FR-10: Offer in-app chat or call functionality between user and mechanic.
+3.4 Payments and Receipts
+•	FR-11: Support payments via local PSPs (JazzCash, Easypaisa) and cash on delivery.
+•	FR-12: Generate digital invoices with breakdown of parts, labor, and taxes.
+•	FR-13: Store payment history for user reference.
+
+
+3.5 Service History and Ratings
+•	FR-14: Maintain a record of completed services with details (date, service type, cost, mechanic).
+•	FR-15: Allow users to rate mechanics (1–5 stars) and provide optional feedback post-service.
+3.6 Mechanic Module
+•	FR-16: Mechanics can register with personal details, certifications, and service specialties.
+•	FR-17: Mechanics can toggle availability (on/off) and view assigned bookings.
+•	FR-18: Provide navigation to job locations via in-app maps.
+•	FR-19: Allow mechanics to mark jobs as completed and upload job notes/photos (e.g., for damage assessment).
+3.7 Admin Dashboard
+•	FR-20: Web-based dashboard to list and manage bookings, users, and mechanics.
+•	FR-21: Enable verification of mechanic certifications and dispute resolution.
+•	FR-22: Generate analytics reports (e.g., monthly bookings, revenue, top mechanics, popular services).
+4. Non-Functional Requirements
+4.1 Performance
+•	NFR-1: Booking confirmation response time ≤ 2 seconds under normal conditions.
+•	NFR-2: Map loading and tracking updates ≤ 3 seconds on 3G networks.
+•	NFR-3: API response time for critical operations (e.g., booking, payment) ≤ 500ms.
+4.2 Scalability
+•	NFR-4: Support 10,000 simultaneous users across multiple cities (e.g., Lahore, Karachi, Islamabad).
+•	NFR-5: Backend should handle peak loads (e.g., 1,000 bookings/hour) without degradation.
+4.3 Security
+•	NFR-6: Use HTTPS/TLS 1.2+ for all API communications.
+•	NFR-7: Encrypt sensitive user data (e.g., phone, payment details) per Pakistan’s data protection laws.
+•	NFR-8: Implement role-based access control (RBAC) for User, Mechanic, and Admin roles.
+4.4 Reliability and Availability
+•	NFR-9: System uptime ≥ 99.5% (excluding scheduled maintenance).
+•	NFR-10: Auto-retry for failed SMS/push notifications or payment transactions (up to 3 retries).
+4.5 Usability
+•	NFR-11: Intuitive UI with ≤ 3 steps to complete a booking.
+•	NFR-12: Support Urdu and English languages with RTL support for Urdu.
+•	NFR-13: Accessible design (e.g., high-contrast UI, readable fonts) per WCAG 2.1 guidelines.
+4.6 Maintainability
+•	NFR-14: Modular codebase with clear separation of concerns (e.g., MVC or microservices).
+•	NFR-15: Comprehensive documentation for API endpoints, database schema, and app workflows.
+•	NFR-16: Automated unit tests covering ≥ 80% of backend code.
+5. External Interface Requirements
+5.1 APIs
+•	Google Maps API: For geolocation, routing, and real-time tracking.
+•	Twilio API: For SMS-based OTP and notifications.
+•	JazzCash/Easypaisa APIs: For secure payment processing.
+•	Firebase Cloud Messaging: For push notifications.
+5.2 Hardware Interfaces
+•	GPS: Required for user location input and mechanic tracking.
+•	Camera: Optional for mechanics to upload job-related photos (e.g., damage assessment).
+•	Network: 3G/4G or Wi-Fi for app functionality.
+6. Use Case Diagram
+Description: The use case diagram illustrates interactions between actors (Customer, Mechanic, Admin) and the system.
+Actors and Use Cases:
+•	Customer:
+o	Sign Up/Login
+o	Manage Profile
+o	Browse/Book Services
+o	Track Mechanic
+o	Make Payment
+o	Rate Mechanic
+•	Mechanic:
+o	Register
+o	Manage Availability
+o	Accept/Complete Jobs
+o	Navigate to Job Location
+•	Admin:
+o	Manage Users/Mechanics
+o	Monitor Bookings
+o	Generate Reports
+o	Resolve Disputes
+Image Placeholder: [Insert Use Case Diagram created in Draw.io or Lucidchart, showing actors and their interactions with labeled use cases.]
+7. User Stories
+Customer Stories
+•	As a Customer, I want to sign up using my phone number and OTP, so I can access the app quickly without a password.
+•	As a Customer, I want to save my car details (e.g., Honda Civic, 2019), so I don’t need to re-enter them for each booking.
+•	As a Customer, I want to browse services with transparent pricing (e.g., Oil Change: PKR 5,000), so I can budget effectively.
+•	As a Customer, I want to book a mechanic to my location, so I avoid visiting a workshop.
+•	As a Customer, I want to track my mechanic’s location on a map, so I know when they’ll arrive.
+•	As a Customer, I want to pay via JazzCash, so I can avoid cash transactions.
+•	As a Customer, I want to rate my mechanic and leave feedback, so I can help improve service quality.
+Mechanic Stories
+•	As a Mechanic, I want to register with my certifications, so customers trust my expertise.
+•	As a Mechanic, I want to toggle my availability, so I can manage my schedule.
+•	As a Mechanic, I want to receive job alerts for nearby bookings, so I can maximize earnings.
+•	As a Mechanic, I want in-app navigation to the customer’s location, so I arrive on time.
+•	As a Mechanic, I want to mark jobs as completed, so I get paid promptly.
+Admin Stories
+•	As an Admin, I want to monitor real-time bookings, so I can balance mechanic assignments.
+•	As an Admin, I want to verify mechanic certifications, so only qualified professionals are onboarded.
+•	As an Admin, I want to generate reports (e.g., revenue, top services), so I can make data-driven decisions.
+8. Wireframes
+Description: Below are textual descriptions of key app screens. Visual wireframes can be created using Figma or Adobe XD and inserted into the Word document.
+8.1 Home Screen (Customer)
+•	Elements:
+o	Header: App logo, user profile icon.
+o	Search bar: For service selection (e.g., "Oil Change", "Tyre Repair").
+o	Categories: Icons for services (e.g., Battery, Brakes).
+o	CTA Button: "Book Now".
+•	Image Placeholder: [Insert wireframe of Home Screen showing service categories and search bar.]
+8.2 Booking Screen
+•	Elements:
+o	Service details: Name, description, price estimate.
+o	Location input: GPS toggle or manual address field.
+o	Time picker: Date and time slots.
+o	Button: "Confirm Booking".
+•	Image Placeholder: [Insert wireframe of Booking Screen with location and time inputs.]
+8.3 Mechanic Tracking Screen
+•	Elements:
+o	Map view: Real-time mechanic location with ETA.
+o	Mechanic info: Name, photo, rating.
+o	Buttons: Call/Chat with mechanic.
+•	Image Placeholder: [Insert wireframe of Tracking Screen with map and mechanic details.]
+8.4 Admin Dashboard
+•	Elements:
+o	Sidebar: Navigation (Bookings, Users, Mechanics, Reports).
+o	Main panel: Booking list, revenue stats, top mechanics.
+o	Filters: Date range, city, service type.
+•	Image Placeholder: [Insert wireframe of Admin Dashboard with metrics and booking list.]
+9. MVP vs. Future Enhancements
+9.1 Minimum Viable Product (MVP) – Phase 1
+•	User sign-up/login with OTP (FR-1, FR-3).
+•	Car profile creation and service booking (FR-2, FR-4–FR-7).
+•	Mechanic registration and availability toggle (FR-16, FR-17).
+•	Real-time booking assignment and tracking (FR-8–FR-10).
+•	Payment via JazzCash/Easypaisa and cash (FR-11–FR-13).
+•	Service history and ratings (FR-14, FR-15).
+•	Basic admin dashboard (bookings, revenue, mechanic list) (FR-20–FR-22).
+9.2 Future Enhancements – Phase 2+
+•	Subscription plans for regular maintenance (e.g., monthly oil checks).
+•	Emergency roadside assistance with 24/7 support.
+•	Predictive maintenance reminders based on vehicle data.
+•	AI chatbot for booking assistance and FAQs.
+•	Fleet management for corporate clients with multiple vehicles.
+10. Technical Architecture
+10.1 Tech Stack
+•	Frontend: React Native for iOS/Android apps (cross-platform, reusable code).
+•	Backend: Django REST Framework (Python) for APIs, authentication, and dispatch logic.
+•	Database: PostgreSQL for relational data (users, bookings, payments).
+•	Real-time Features: Socket.IO for mechanic tracking and notifications.
+•	External Services:
+o	Google Maps API for geolocation and routing.
+o	JazzCash/Easypaisa for payments.
+o	Firebase Cloud Messaging for push notifications.
+o	Twilio for SMS/OTP.
+•	Admin Panel: React.js with Tailwind CSS for responsive web dashboard.
+10.2 System Architecture
+•	Client Layer: Mobile apps for customers and mechanics, web app for admins.
+•	API Layer: RESTful APIs for CRUD operations, authentication (JWT), and real-time updates.
+•	Data Layer: PostgreSQL with tables for users, vehicles, bookings, payments, and mechanics.
+•	External Services: Integrated via secure API calls (HTTPS).
+11. Constraints
+•	Regulatory: Compliance with Pakistan’s data protection laws (e.g., Personal Data Protection Bill).
+•	Geographical: Initial rollout limited to major cities (Lahore, Karachi, Islamabad).
+•	Network: App functionality depends on reliable 3G/4G or Wi-Fi access.
+•	Payment: Limited to local PSPs initially, with potential delays in API integration.
+12. Summary Table
+Module	Key Features
+User	Registration, vehicle profile, booking management, payment, ratings
+Service Booking	Service selection, GPS/manual location, scheduling, confirmation
+Dispatch/Tracking	Nearest mechanic assignment, real-time map tracking, in-app chat/call
+Payment & History	JazzCash/Easypaisa integration, digital invoices, service history, ratings
+Mechanic Portal	Registration, certifications, availability toggle, job management, navigation
+Admin Dashboard	Booking management, user/mechanic oversight, analytics, dispute resolution
+

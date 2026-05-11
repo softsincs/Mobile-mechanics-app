@@ -1,0 +1,318 @@
+﻿
+================================================================================
+MOBILE MECHANIC API TEST SUITE
+================================================================================
+
+1. AUTHENTICATION TESTS
+--------------------------------------------------------------------------------
+Γ£ô PASS | Signup                                   | Status: 201
+
+  ≡ƒôè Signup Response:
+     {
+      "user_id": "41d798dc-e459-42e6-a485-018e04b6d1d3",
+      "phone_number": "+9230000309161",
+      "email": "test1778309161@example.com",
+      "user": {
+            "id": "41d798dc-e459-42e6-a485-018e04b6d1d3",
+            "phone_number": "+9230000309161",
+            "email": "test1778309161@example.com",
+            "first_name": "Test",
+            "last_name": "User",
+            "phone_verified": false,
+            "email_verified": false,
+            "created_at": "2026-05-09 11:46:04",
+            "updated_at": "2026-05-09 11:46:04"
+      },
+      "token": "9ba2c934e2fc8777057de98142571c52b87f3924"
+}
+  ΓåÆ Token: 9ba2c934e2fc8777057d...
+  ΓåÆ User ID: 41d798dc-e459-42e6-a485-018e04b6d1d3
+Γ£ô PASS | Get Profile                              | Status: 200
+
+  ≡ƒôè Profile Response:
+     {
+      "id": "41d798dc-e459-42e6-a485-018e04b6d1d3",
+      "phone_number": "+9230000309161",
+      "email": "test1778309161@example.com",
+      "first_name": "Test",
+      "last_name": "User",
+      "phone_verified": false,
+      "email_verified": false,
+      "created_at": "2026-05-09 11:46:04",
+      "updated_at": "2026-05-09 11:46:04"
+}
+  ΓåÆ Name: Test User
+  ΓåÆ Email: test1778309161@example.com
+
+2. SERVICES TESTS
+--------------------------------------------------------------------------------
+Γ£ô PASS | Get Services                             | Status: 200
+
+  ≡ƒôè Services Response:
+     {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+            {
+                  "id": 5,
+                  "category": {
+                        "id": 6,
+                        "name": "Test Category",
+                        "description": "Test",
+                        "icon_url": null,
+                        "is_active": true
+                  },
+                  "name": "Test Service",
+                  "description": "Test",
+                  "estimated_duration": 30,
+                  "base_price": "1000.00",
+                  "min_price": null,
+                  "max_price": null,
+                  "is_active": true,
+                  "prices": [
+                        {
+                              "id": 4,
+                              "service": 5,
+                              "city": "Lahore",
+                              "peak_multiplier": "1.50",
+                              "off_peak_multiplier": "1.00",
+                              "weekend_multiplier": "1.00",
+                              "valid_from": "2026-05-07 10:31:07",
+                              "valid_to": null
+                        }
+                  ],
+                  "availability_slots": [],
+                  "promotions": [],
+                  "created_at": "2026-05-08 10:31:07",
+                  "updated_at": "2026-05-08 10:31:07"
+            },
+            {
+                  "id": 4,
+                  "category": {
+                        "id": 5,
+                        "name": "Test Category",
+                        "description": "Test",
+                        "icon_url": null,
+                        "is_active": true
+                  },
+                  "name": "Test Service",
+                  "description": "Test",
+                  "estimated_duration": 30,
+                  "base_price": "1000.00",
+                  "min_price": null,
+                  "max_price": null,
+                  "is_active": true,
+                  "prices": [
+                        {
+                              "id": 3,
+                              "service": 4,
+                              "city": "Lahore",
+                              "peak_multiplier": "1.50",
+                              "off_peak_multiplier": "1.00",
+                              "weekend_multiplier": "1.00",
+                              "valid_from": "2026-05-07 10:30:49",
+                              "valid_to": null
+                        }
+                  ],
+                  "availability_slots": [],
+                  "promotions": [],
+                  "created_at": "2026-05-08 10:30:49",
+                  "updated_at": "2026-05-08 10:30:49"
+            },
+            {
+                  "id": 3,
+                  "category": {
+                        "id": 4,
+                        "name": "Test Category",
+                        "description": "Test",
+                        "icon_url": null,
+                        "is_active": true
+                  },
+                  "name": "Test Service",
+                  "description": "Test",
+                  "estimated_duration": 30,
+                  "base_price": "1000.00",
+                  "min_price": null,
+                  "max_price": null,
+                  "is_active": true,
+                  "prices": [
+                        {
+                              "id": 2,
+                              "service": 3,
+                              "city": "Lahore",
+                              "peak_multiplier": "1.50",
+                              "off_peak_multiplier": "1.00",
+                              "weekend_multiplier": "1.00",
+                              "valid_from": "2026-05-07 10:30:30",
+                              "valid_to": null
+                        }
+                  ],
+                  "availability_slots": [],
+                  "promotions": [],
+                  "created_at": "2026-05-08 10:30:30",
+                  "updated_at": "2026-05-08 10:30:30"
+            },
+            {
+                  "id": 2,
+                  "category": {
+                        "id": 3,
+                        "name": "Test Category",
+                        "description": "Test",
+                        "icon_url": null,
+                        "is_active": true
+                  },
+                  "name": "Test Service",
+                  "description": "Test",
+                  "estimated_duration": 30,
+                  "base_price": "1000.00",
+                  "min_price": null,
+                  "max_price": null,
+                  "is_active": true,
+                  "prices": [
+                        {
+                              "id": 1,
+                              "service": 2,
+                              "city": "Lahore",
+                              "peak_multiplier": "1.50",
+                              "off_peak_multiplier": "1.00",
+                              "weekend_multiplier": "1.00",
+                              "valid_from": "2026-05-07 10:28:55",
+                              "valid_to": null
+                        }
+                  ],
+                  "availability_slots": [],
+                  "promotions": [],
+                  "created_at": "2026-05-08 10:28:55",
+                  "updated_at": "2026-05-08 10:28:55"
+            },
+            {
+                  "id": 1,
+                  "category": {
+                        "id": 2,
+                        "name": "Test Category",
+                        "description": "Test",
+                        "icon_url": null,
+                        "is_active": true
+                  },
+                  "name": "Test Service",
+                  "description": "Test",
+                  "estimated_duration": 30,
+                  "base_price": "1000.00",
+                  "min_price": null,
+                  "max_price": null,
+                  "is_active": true,
+                  "prices": [],
+                  "availability_slots": [],
+                  "promotions": [],
+                  "created_at": "2026-05-08 10:28:38",
+                  "updated_at": "2026-05-08 10:28:38"
+            }
+      ]
+}
+  ΓåÆ Found 5 services
+Γ£ô PASS | Get Mechanics                            | Status: 200
+
+  ≡ƒôè Mechanics Response:
+     []
+  ΓåÆ Found 0 mechanics
+
+3. BOOKING TESTS
+--------------------------------------------------------------------------------
+Γ£ô PASS | Get Bookings                             | Status: 200
+
+  ≡ƒôè Bookings Response:
+     {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+}
+  ΓåÆ User has 0 bookings
+Γ£ù FAIL | Create Booking                           | Status: 400
+
+  ≡ƒôè Create Booking Response:
+     {
+      "service_id": [
+            "This field is required."
+      ],
+      "service_location": [
+            "This field is required."
+      ],
+      "city": [
+            "This field is required."
+      ],
+      "latitude": [
+            "This field is required."
+      ],
+      "longitude": [
+            "This field is required."
+      ],
+      "scheduled_date": [
+            "This field is required."
+      ],
+      "scheduled_time": [
+            "This field is required."
+      ],
+      "estimated_duration": [
+            "This field is required."
+      ],
+      "base_price": [
+            "This field is required."
+      ],
+      "total_amount": [
+            "This field is required."
+      ]
+}
+  ΓåÆ Validation error (invalid service/mechanic)
+
+4. OTHER FEATURES TESTS
+--------------------------------------------------------------------------------
+Γ£ô PASS | Get Notifications                        | Status: 200
+
+  ≡ƒôè Notifications Response:
+     {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+}
+  ΓåÆ Found 0 notifications
+Γ£ô PASS | Get Reviews                              | Status: 200
+
+  ≡ƒôè Reviews Response:
+     {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+}
+  ΓåÆ Found 0 reviews
+Γ£ô PASS | Get Job Offers                           | Status: 200
+
+  ≡ƒôè Job Offers Response:
+     {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+}
+  ΓåÆ Found 0 job offers
+
+5. SECURITY TESTS
+--------------------------------------------------------------------------------
+Γ£ô PASS | Unauthorized (No Token)                  | Status: 401
+
+  ≡ƒôè Unauthorized Response:
+     {
+      "detail": "Authentication credentials were not provided."
+}
+  ΓåÆ Correctly rejected unauthorized request
+
+================================================================================
+TEST SUMMARY
+================================================================================
+
+Γ£ô Passed: 9/10 (90.0%)
+================================================================================
+

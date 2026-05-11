@@ -1,0 +1,70 @@
+# Core Django
+Django==5.2.10
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+django-filter==24.1
+drf-yasg==1.21.7
+
+# Database
+psycopg2-binary==2.9.11
+sqlparse==0.4.4
+
+# Caching & Task Queue
+redis==5.0.1
+django-redis==5.4.0
+celery==5.3.4
+
+# Authentication & Security
+djangorestframework-simplejwt==5.3.1
+django-allauth==0.61.1
+dj-rest-auth==5.0.2
+python-decouple==3.8
+cryptography==41.0.7
+bcrypt==4.1.2
+
+# Email & Communications
+django-anymail==10.2
+sendgrid==6.10.0
+
+# OTP & 2FA
+pyotp==2.9.0
+qrcode==7.4.2
+pillow>=11.0.0
+
+# Validation
+phonenumbers==8.13.33
+email-validator==2.1.0
+
+# Testing & Quality
+pytest==7.4.3
+pytest-django==4.7.0
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-xdist==3.5.0
+pytest-timeout==2.2.0
+coverage==7.3.2
+
+# Linting & Formatting
+flake8==6.1.0
+black==23.12.1
+isort==5.13.2
+pylint==3.0.3
+
+# Security
+bandit==1.7.5
+
+# Deployment & Server
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Monitoring & Logging
+sentry-sdk==1.39.2
+python-json-logger==2.0.7
+
+# API Documentation
+drf-spectacular==0.29.0
+
+# Utilities
+requests==2.31.0
+stripe==5.0.0
+flower==2.0.1

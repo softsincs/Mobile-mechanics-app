@@ -18,6 +18,7 @@ class Command(BaseCommand):
             return
 
         path = Path(settings.BASE_DIR) / 'dynamic_allowed_hosts.txt'
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.touch(exist_ok=True)
 
         # Read existing

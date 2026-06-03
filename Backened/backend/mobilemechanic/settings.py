@@ -89,6 +89,23 @@ DEBUG = config('DEBUG', cast=bool, default=False)
 
 ALLOWED_HOSTS = _csv_config('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver')
 
+# ============================================================================
+# Dynamic ALLOWED_HOSTS from file
+# This allows adding hosts on the droplet without changing source-controlled files.
+# File path: <BASE_DIR>/dynamic_allowed_hosts.txt -- one host per line
+# ============================================================================
+_DYNAMIC_ALLOWED_HOSTS_FILE = BASE_DIR / 'dynamic_allowed_hosts.txt'
+if _DYNAMIC_ALLOWED_HOSTS_FILE.exists():
+    try:
+        with open(_DYNAMIC_ALLOWED_HOSTS_FILE, 'r') as _f:
+            for _line in _f:
+                _h = _line.strip()
+                if _h and _h not in ALLOWED_HOSTS:
+                    ALLOWED_HOSTS.append(_h)
+    except Exception:
+        # Don't crash the app if file read fails; log later if needed
+        pass
+
 
 # Application definition
 

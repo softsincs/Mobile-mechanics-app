@@ -42,6 +42,8 @@ services:
     volumes:
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
+      # Host-managed dynamic allowed hosts file (create at Backened/dynamic_allowed_hosts.txt)
+      - ./dynamic_allowed_hosts.txt:/app/dynamic_allowed_hosts.txt:ro
     environment:
       - DEBUG=False
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}

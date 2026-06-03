@@ -16,10 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+from django.db import connections
+from django.core.cache import caches
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+    path('health/', lambda request: JsonResponse({'status': 'ok'})),
     # Authentication API
     path('api/v1/auth/', include('users.urls')),
     

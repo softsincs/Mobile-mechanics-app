@@ -11,23 +11,83 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import sys
+from urllib.parse import unquote, urlparse
 import os
+import sys
+
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _csv_config(name, default):
+    return [item.strip() for item in config(name, default=default).split(',') if item.strip()]
+
+
+def _database_config():
+    database_url = config('DATABASE_URL', default='')
+
+    if database_url:
+        parsed = urlparse(database_url)
+        engine_map = {
+            'postgres': 'django.db.backends.postgresql',
+            'postgresql': 'django.db.backends.postgresql',
+            'postgresql_psycopg2': 'django.db.backends.postgresql',
+            'mysql': 'django.db.backends.mysql',
+            'sqlite': 'django.db.backends.sqlite3',
+            'sqlite3': 'django.db.backends.sqlite3',
+        }
+        engine = engine_map.get(parsed.scheme, 'django.db.backends.postgresql')
+
+        if engine == 'django.db.backends.sqlite3':
+            sqlite_name = parsed.path.lstrip('/') or ':memory:'
+            if sqlite_name != ':memory:':
+                sqlite_name = unquote(sqlite_name)
+            return {
+                'ENGINE': engine,
+                'NAME': sqlite_name,
+                'OPTIONS': {
+                    'timeout': 30,
+                    'isolation_level': None,
+                },
+                'CONN_MAX_AGE': 0,
+                'ATOMIC_REQUESTS': False,
+            }
+
+        return {
+            'ENGINE': engine,
+            'NAME': unquote(parsed.path.lstrip('/')),
+            'USER': unquote(parsed.username or ''),
+            'PASSWORD': unquote(parsed.password or ''),
+            'HOST': parsed.hostname or '',
+            'PORT': parsed.port or '',
+            'CONN_MAX_AGE': 60,
+            'ATOMIC_REQUESTS': False,
+        }
+
+    return {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 30,
+            'isolation_level': None,
+        },
+        'CONN_MAX_AGE': 0,
+        'ATOMIC_REQUESTS': False,
+    }
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-507_u4svdp5x488^%k5@1$14)fgyy$!%pe%l^-b+--=m7_^&ly'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', cast=bool, default=False)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '*']
+ALLOWED_HOSTS = _csv_config('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver')
 
 
 # Application definition
@@ -106,16 +166,7 @@ WSGI_APPLICATION = 'mobilemechanic.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 30,  # Increase timeout for database access
-            'isolation_level': None,  # Autocommit mode
-        },
-        'CONN_MAX_AGE': 0,  # Fresh connection per request
-        'ATOMIC_REQUESTS': False,  # Don't wrap in transactions
-    }
+    'default': _database_config(),
 }
 
 # Test database configuration
@@ -213,20 +264,10 @@ REST_FRAMEWORK = {
 # ============================================================================
 # CORS CONFIGURATION
 # ============================================================================
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:8000',
-    'http://localhost:8080',
-    'http://localhost:8081',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:8080',
-    'http://127.0.0.1:8081',
-]
+CORS_ALLOWED_ORIGINS = _csv_config(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:5174,http://localhost:8000,http://localhost:8080,http://localhost:8081,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:5173,http://127.0.0.1:8080,http://127.0.0.1:8081',
+)
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -304,7 +345,7 @@ AUTHENTICATION_BACKENDS = [
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400 * 7  # 7 days
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', cast=bool, default=not DEBUG)
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = False
@@ -333,15 +374,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # ============================================================================
 # EMAIL CONFIGURATION
 # ============================================================================
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Development
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Production
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = ''  # Add your email
-EMAIL_HOST_PASSWORD = ''  # Add your app password
-DEFAULT_FROM_EMAIL = 'noreply@mobilemechanic.com'
-SERVER_EMAIL = 'server@mobilemechanic.com'
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@mobilemechanic.com')
+SERVER_EMAIL = config('SERVER_EMAIL', default='server@mobilemechanic.com')
 
 # ============================================================================
 # LOGGING CONFIGURATION
@@ -393,24 +433,40 @@ LOGGING = {
 # ============================================================================
 # CACHE CONFIGURATION
 # ============================================================================
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'mobilemechanic-cache',
-        'TIMEOUT': 300,  # 5 minutes
-        'OPTIONS': {
-            'MAX_ENTRIES': 1000,
+CACHE_URL = config('CACHE_URL', default='')
+
+if CACHE_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CACHE_URL,
+            'TIMEOUT': 300,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
         }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'mobilemechanic-cache',
+            'TIMEOUT': 300,  # 5 minutes
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000,
+            }
+        }
+    }
 
 # ============================================================================
 # SECURITY CONFIGURATION
 # ============================================================================
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
-SECURE_SSL_REDIRECT = False  # Set to True in production with HTTPS
-SECURE_HSTS_SECONDS = 31536000  # 1 year (for production)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool, default=not DEBUG)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', cast=int, default=31536000 if not DEBUG else 0)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False  # Set to True in production
 SECURE_HSTS_PRELOAD = False  # Set to True in production
 
@@ -418,11 +474,10 @@ SECURE_HSTS_PRELOAD = False  # Set to True in production
 CSRF_COOKIE_SECURE = False  # Set to True in production
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:8000',
-]
+CSRF_TRUSTED_ORIGINS = _csv_config(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:3000,http://localhost:3001,http://localhost:8000',
+)
 
 # ============================================================================
 # FILE UPLOAD CONFIGURATION

@@ -69,52 +69,40 @@ class EmailService:
         Returns:
             bool: True if email sent successfully, False otherwise
         """
+        # Prefer webhook if configured (no SMTP)
         try:
+            webhook_url = getattr(settings, 'EMAIL_WEBHOOK_URL', None)
+            use_webhook = bool(getattr(settings, 'EMAIL_USE_WEBHOOK', True)) and webhook_url
+
             subject = "Your One-Time Password (OTP)"
-            message = f"""
-Hello {user.first_name or user.email},
+            plain_message = f"Hello {user.first_name or user.email},\n\nYour One-Time Password (OTP) is: {otp_code}\n\nThis code will expire in 5 minutes. Do not share this code with anyone.\n"
+            html_message = f"<p>Hello {user.first_name or user.email},</p><p>Your One-Time Password (OTP) is: <strong>{otp_code}</strong></p><p>This code will expire in 5 minutes.</p>"
 
-Your One-Time Password (OTP) is: {otp_code}
+            if use_webhook:
+                payload = {
+                    "to": user.email,
+                    "subject": subject,
+                    "body": html_message,
+                    "reply_to": getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+                }
+                # n8n expects application/json POST
+                import requests
 
-This code will expire in 5 minutes.
-Do not share this code with anyone.
+                resp = requests.post(webhook_url, json=payload, timeout=10)
+                resp.raise_for_status()
+                logger.info(f"OTP webhook sent to {user.email} via {webhook_url}")
+                return True
 
-If you didn't request this code, please ignore this email.
-
-Best regards,
-Mobile Mechanic Team
-            """.strip()
-
-            html_message = f"""
-<html>
-<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
-    <div style="background-color: white; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto;">
-        <h2>Your One-Time Password (OTP)</h2>
-        <p>Hello {user.first_name or user.email},</p>
-        <p>Your One-Time Password is:</p>
-        <div style="background-color: #007bff; color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; border-radius: 8px; letter-spacing: 5px;">
-            {otp_code}
-        </div>
-        <p style="color: #666;">This code will expire in <strong>5 minutes</strong>.</p>
-        <p style="color: #d9534f; font-weight: bold;">⚠️ Do not share this code with anyone.</p>
-        <p style="color: #666;">If you didn't request this code, please ignore this email.</p>
-        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-        <p style="color: #999; font-size: 12px;">Mobile Mechanic Team</p>
-    </div>
-</body>
-</html>
-            """.strip()
-
+            # Fallback to Django send_mail if webhook not set
             send_mail(
                 subject=subject,
-                message=message,
+                message=plain_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 html_message=html_message,
                 fail_silently=False,
             )
-
-            logger.info(f"OTP email sent to {user.email}")
+            logger.info(f"OTP email sent to {user.email} via SMTP")
             return True
 
         except Exception as e:
@@ -137,52 +125,36 @@ Mobile Mechanic Team
             reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
 
             subject = "Reset Your Password"
-            message = f"""
-Hello {user.first_name or user.email},
+            plain_message = f"Hello {user.first_name or user.email},\n\nClick the link below to reset your password:\n\n{reset_link}\n\nThis link will expire in 15 minutes."
+            html_message = f"<p>Hello {user.first_name or user.email},</p><p>Click the link below to reset your password:</p><p><a href=\"{reset_link}\">Reset Password</a></p><p>This link will expire in 15 minutes.</p>"
 
-Click the link below to reset your password:
+            webhook_url = getattr(settings, 'EMAIL_WEBHOOK_URL', None)
+            use_webhook = bool(getattr(settings, 'EMAIL_USE_WEBHOOK', True)) and webhook_url
 
-{reset_link}
+            if use_webhook:
+                payload = {
+                    "to": user.email,
+                    "subject": subject,
+                    "body": html_message,
+                    "reply_to": getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+                }
+                import requests
 
-This link will expire in 15 minutes.
-If you didn't request this, please ignore this email.
+                resp = requests.post(webhook_url, json=payload, timeout=10)
+                resp.raise_for_status()
+                logger.info(f"Password reset webhook sent to {user.email} via {webhook_url}")
+                return True
 
-Best regards,
-Mobile Mechanic Team
-            """.strip()
-
-            html_message = f"""
-<html>
-<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
-    <div style="background-color: white; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto;">
-        <h2>Reset Your Password</h2>
-        <p>Hello {user.first_name or user.email},</p>
-        <p>Click the button below to reset your password:</p>
-        <div style="text-align: center; margin: 30px 0;">
-            <a href="{reset_link}" style="background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">
-                Reset Password
-            </a>
-        </div>
-        <p style="color: #666;">Or copy this link: <a href="{reset_link}">{reset_link}</a></p>
-        <p style="color: #d9534f; font-weight: bold;">⚠️ This link will expire in 15 minutes.</p>
-        <p style="color: #666;">If you didn't request this, please ignore this email.</p>
-        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-        <p style="color: #999; font-size: 12px;">Mobile Mechanic Team</p>
-    </div>
-</body>
-</html>
-            """.strip()
-
+            # Fallback to SMTP
             send_mail(
                 subject=subject,
-                message=message,
+                message=plain_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 html_message=html_message,
                 fail_silently=False,
             )
-
-            logger.info(f"Password reset email sent to {user.email}")
+            logger.info(f"Password reset email sent to {user.email} via SMTP")
             return True
 
         except Exception as e:

@@ -398,6 +398,14 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@mobilemechanic.com')
+
+# Webhook email forwarding (e.g., n8n)
+EMAIL_USE_WEBHOOK = config('EMAIL_USE_WEBHOOK', cast=bool, default=True)
+EMAIL_WEBHOOK_URL = config('EMAIL_WEBHOOK_URL', default='')
+
+# If webhook usage is enabled and URL provided, use the WebhookEmailBackend
+if EMAIL_USE_WEBHOOK and EMAIL_WEBHOOK_URL:
+    EMAIL_BACKEND = 'mobilemechanic.email_backend.WebhookEmailBackend'
 SERVER_EMAIL = config('SERVER_EMAIL', default='server@mobilemechanic.com')
 
 # ============================================================================

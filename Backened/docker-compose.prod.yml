@@ -34,7 +34,7 @@ services:
       - backend
 
   backend:
-    image: ${DOCKER_USERNAME}/mobilemechanic-backend:${IMAGE_TAG:-latest}
+      build: ./backend
     restart: always
     command: >
       sh -c "python manage.py migrate &&

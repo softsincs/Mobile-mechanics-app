@@ -88,6 +88,9 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./staticfiles:/app/staticfiles:ro
       - ./media:/app/media:ro
+      # LetsEncrypt and Certbot webroot mounts
+      - ./letsencrypt:/etc/letsencrypt
+      - ./certbot-www:/var/www/certbot
     depends_on:
       - backend
     healthcheck:

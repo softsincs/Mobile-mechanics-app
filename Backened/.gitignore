@@ -1,1 +1,5 @@
 venv/
+
+# Local environment files should stay on the server/workstation only.
+.env
+.env.local

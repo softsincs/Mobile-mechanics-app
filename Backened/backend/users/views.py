@@ -110,7 +110,7 @@ class SignupView(APIView):
 
         if not email_sent:
             return Response(
-                {"error": "Failed to send verification email. Please try again."},
+                {"error": "Verification email could not be sent. Configure EMAIL_WEBHOOK_URL on the server."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -204,7 +204,7 @@ class LoginView(APIView):
 
         if not email_sent:
             return Response(
-                {"error": "Failed to send OTP email. Please try again."},
+                {"error": "OTP email could not be sent. Configure EMAIL_WEBHOOK_URL on the server."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -282,7 +282,7 @@ class SendOTPView(APIView):
 
         if not email_sent:
             return Response(
-                {"error": "Failed to send OTP email. Please try again."},
+                {"error": "OTP email could not be sent. Configure EMAIL_WEBHOOK_URL on the server."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

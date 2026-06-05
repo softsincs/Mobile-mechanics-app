@@ -25,6 +25,15 @@ from .models import User, OTPToken, PasswordResetToken
 logger = logging.getLogger(__name__)
 
 
+def _post_email_webhook(webhook_url, payload, timeout=5):
+    """Post an email payload to the configured webhook with a short timeout."""
+    import requests
+
+    resp = requests.post(webhook_url, json=payload, timeout=timeout)
+    resp.raise_for_status()
+    return resp
+
+
 # =========================================
 # � UTILITY FUNCTIONS
 # =========================================
@@ -69,7 +78,6 @@ class EmailService:
         Returns:
             bool: True if email sent successfully, False otherwise
         """
-        # Prefer webhook if configured (no SMTP)
         try:
             webhook_url = getattr(settings, 'EMAIL_WEBHOOK_URL', None)
             use_webhook = bool(getattr(settings, 'EMAIL_USE_WEBHOOK', True)) and webhook_url
@@ -85,25 +93,28 @@ class EmailService:
                     "body": html_message,
                     "reply_to": getattr(settings, 'DEFAULT_FROM_EMAIL', '')
                 }
-                # n8n expects application/json POST
-                import requests
-
-                resp = requests.post(webhook_url, json=payload, timeout=10)
-                resp.raise_for_status()
+                _post_email_webhook(webhook_url, payload, timeout=5)
                 logger.info(f"OTP webhook sent to {user.email} via {webhook_url}")
                 return True
 
-            # Fallback to Django send_mail if webhook not set
-            send_mail(
-                subject=subject,
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=html_message,
-                fail_silently=False,
+            if getattr(settings, 'DEBUG', False):
+                # Keep SMTP/console fallback only for local development.
+                send_mail(
+                    subject=subject,
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                logger.info(f"OTP email sent to {user.email} via SMTP")
+                return True
+
+            logger.error(
+                "EMAIL_WEBHOOK_URL is not configured in production; refusing SMTP fallback for %s",
+                user.email,
             )
-            logger.info(f"OTP email sent to {user.email} via SMTP")
-            return True
+            return False
 
         except Exception as e:
             logger.error(f"Failed to send OTP email to {user.email}: {str(e)}")
@@ -138,24 +149,28 @@ class EmailService:
                     "body": html_message,
                     "reply_to": getattr(settings, 'DEFAULT_FROM_EMAIL', '')
                 }
-                import requests
-
-                resp = requests.post(webhook_url, json=payload, timeout=10)
-                resp.raise_for_status()
+                _post_email_webhook(webhook_url, payload, timeout=5)
                 logger.info(f"Password reset webhook sent to {user.email} via {webhook_url}")
                 return True
 
-            # Fallback to SMTP
-            send_mail(
-                subject=subject,
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=html_message,
-                fail_silently=False,
+            if getattr(settings, 'DEBUG', False):
+                # Keep SMTP/console fallback only for local development.
+                send_mail(
+                    subject=subject,
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                logger.info(f"Password reset email sent to {user.email} via SMTP")
+                return True
+
+            logger.error(
+                "EMAIL_WEBHOOK_URL is not configured in production; refusing SMTP fallback for %s",
+                user.email,
             )
-            logger.info(f"Password reset email sent to {user.email} via SMTP")
-            return True
+            return False
 
         except Exception as e:
             logger.error(f"Failed to send password reset email to {user.email}: {str(e)}")

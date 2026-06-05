@@ -31,19 +31,19 @@ logger = logging.getLogger(__name__)
 
 def validate_refresh_token(refresh_token):
     """
-    Validate refresh token and return user ID.
+    Validate JWT refresh token and return user ID.
     
     Args:
-        refresh_token: Token string to validate
+        refresh_token: JWT refresh token string to validate
         
     Returns:
         user_id if valid, raises ValueError otherwise
     """
-    from rest_framework.authtoken.models import Token
     try:
-        token = Token.objects.get(key=refresh_token)
-        return str(token.user.id)
-    except Token.DoesNotExist:
+        from rest_framework_simplejwt.tokens import RefreshToken
+        token = RefreshToken(refresh_token)
+        return str(token["user_id"])
+    except Exception:
         raise ValueError("Invalid refresh token")
 
 
@@ -309,19 +309,20 @@ class PasswordResetService:
 
 def validate_refresh_token(refresh_token):
     """
-    Validate refresh token and return user ID.
+    Validate JWT refresh token and return user ID.
     
     Args:
-        refresh_token: Token string to validate
+        refresh_token: JWT refresh token string to validate
         
     Returns:
         user_id if valid, raises ValidationError otherwise
     """
     try:
-        from rest_framework.authtoken.models import Token
-        token = Token.objects.get(key=refresh_token)
-        return token.user.id
-    except Token.DoesNotExist:
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        token = RefreshToken(refresh_token)
+        return token["user_id"]
+    except Exception:
         raise ValueError("Invalid refresh token")
 
 

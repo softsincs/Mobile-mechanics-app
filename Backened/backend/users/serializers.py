@@ -303,6 +303,9 @@ class LoginSerializer(serializers.Serializer):
             user.increment_failed_login()
             raise AuthenticationFailed("Invalid credentials")
 
+        if not user.email_verified:
+            raise AuthenticationFailed("Please verify your email before logging in")
+
         # Reset failed attempts on successful password check
         user.reset_failed_login()
 
@@ -667,13 +670,14 @@ class RefreshTokenSerializer(serializers.Serializer):
         if not value:
             raise serializers.ValidationError("Refresh token is required")
         
-        # Validate token exists and is valid
-        from rest_framework.authtoken.models import Token
         try:
-            token = Token.objects.get(key=value)
-            if not token.user.is_active:
+            from rest_framework_simplejwt.tokens import RefreshToken
+
+            token = RefreshToken(value)
+            user_id = token["user_id"]
+            if not User.objects.filter(id=user_id, is_active=True).exists():
                 raise serializers.ValidationError("User account is inactive")
-        except Token.DoesNotExist:
+        except Exception:
             raise serializers.ValidationError("Invalid refresh token")
 
         return value

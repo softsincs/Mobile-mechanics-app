@@ -11,7 +11,7 @@
       "value": "http://localhost:8000"
     },
     {
-      "key": "auth_token",
+      "key": "access_token",
       "value": ""
     },
     {
@@ -250,8 +250,9 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "const res = pm.response.json();",
-                  "if(res.token){ pm.environment.set('auth_token', res.token); }",
-                  "if(res.refresh){ pm.environment.set('refresh_token', res.refresh); }"
+                  "if (res.temp_token) { pm.environment.set('temp_token', res.temp_token); }",
+                  "if (res.access_token) { pm.environment.set('access_token', res.access_token); }",
+                  "if (res.refresh_token) { pm.environment.set('refresh_token', res.refresh_token); }"
                 ]
               }
             }

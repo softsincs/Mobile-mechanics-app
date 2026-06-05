@@ -62,7 +62,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Token YOUR_TOKEN"
+                "value": "Bearer {{access_token}}"
               }
             ],
             "url": {
@@ -86,7 +86,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Token YOUR_TOKEN"
+                "value": "Bearer {{access_token}}"
               }
             ],
             "url": {
@@ -131,7 +131,11 @@
       "value": "http://localhost:8000"
     },
     {
-      "key": "auth_token",
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
       "value": ""
     }
   ]

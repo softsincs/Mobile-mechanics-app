@@ -20,11 +20,11 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.conf import settings
 from datetime import timedelta
 import secrets
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User, OTPToken
 from .serializers import (
@@ -39,6 +39,32 @@ from .serializers import (
     RefreshTokenSerializer,
 )
 from .services import EmailService, OTPService, PasswordResetService
+
+
+def issue_jwt_tokens(user):
+    """Issue JWT access and refresh tokens for a user."""
+    refresh = RefreshToken.for_user(user)
+    return {
+        "access_token": str(refresh.access_token),
+        "refresh_token": str(refresh),
+    }
+
+
+def send_verification_otp(user):
+    """Create an OTP and send it to the user's email."""
+    otp_token, otp_code = OTPService.create_otp_token(
+        user=user,
+        purpose="email_verification",
+        expiry_minutes=settings.OTP_EXPIRY_MINUTES,
+    )
+
+    from django.core.cache import cache
+
+    cache.set(f"otp_code_{user.phone_number}", otp_code, settings.OTP_EXPIRY_MINUTES * 60)
+    cache.set(f"otp_{user.id}", otp_code, settings.OTP_EXPIRY_MINUTES * 60)
+
+    email_sent = EmailService.send_otp_email(user=user, otp_code=otp_code)
+    return otp_token, otp_code, email_sent
 
 
 # =========================================
@@ -63,20 +89,16 @@ class SignupView(APIView):
     
     Response:
     {
-        "user": {
-            "id": "uuid",
-            "phone_number": "+923001234567",
-            "email": "user@example.com",
-            ...
-        },
-        "token": "auth_token_string"
+        "message": "Verification email sent",
+        "otp_required": true,
+        "temp_token": "temp_token_for_email_verification"
     }
     """
 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Register new user and return authentication token."""
+        """Register new user and send verification OTP automatically."""
         serializer = SignupSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -84,8 +106,19 @@ class SignupView(APIView):
 
         user = serializer.save()
 
-        # Create authentication token
-        token, created = Token.objects.get_or_create(user=user)
+        _, _, email_sent = send_verification_otp(user)
+
+        if not email_sent:
+            return Response(
+                {"error": "Failed to send verification email. Please try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        temp_token = secrets.token_urlsafe(32)
+        request.session["otp_user_id"] = str(user.id)
+        request.session["otp_temp_token"] = temp_token
+        request.session["otp_flow_start"] = timezone.now().isoformat()
+        request.session["otp_expires_at"] = (timezone.now() + timedelta(minutes=5)).isoformat()
 
         return Response(
             {
@@ -93,7 +126,9 @@ class SignupView(APIView):
                 "phone_number": user.phone_number,
                 "email": user.email,
                 "user": UserSerializer(user).data,
-                "token": token.key,
+                "message": "Verification email sent. Please verify your email to continue.",
+                "otp_required": True,
+                "temp_token": temp_token,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -158,6 +193,20 @@ class LoginView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.validated_data["user"]
+
+        if not user.email_verified:
+            return Response(
+                {"detail": "Please verify your email before logging in."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        _, _, email_sent = send_verification_otp(user)
+
+        if not email_sent:
+            return Response(
+                {"error": "Failed to send OTP email. Please try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         # Create temporary token for OTP flow
         temp_token = secrets.token_urlsafe(32)
@@ -300,13 +349,11 @@ class VerifyOTPView(APIView):
         user.email_verified = True
         user.save()
 
-        # Get or create access token
-        token, created = Token.objects.get_or_create(user=user)
+        tokens = issue_jwt_tokens(user)
 
         return Response(
             {
-                "access_token": token.key,
-                "token": token.key,
+                **tokens,
                 "user": UserSerializer(user).data,
             },
             status=status.HTTP_200_OK,
@@ -472,7 +519,8 @@ class RefreshTokenView(APIView):
     
     Response:
     {
-        "token": "new_access_token"
+        "access_token": "new_access_token",
+        "refresh_token": "refresh_token_string"
     }
     """
 
@@ -485,37 +533,20 @@ class RefreshTokenView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get the old token
+        # Validate JWT refresh token and return a new access token
         token_string = serializer.validated_data["refresh_token"]
-        
         try:
-            old_token = Token.objects.get(key=token_string)
-        except Token.DoesNotExist:
+            refresh = RefreshToken(token_string)
+        except Exception:
             return Response(
                 {"error": "Token not found"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
-        user = old_token.user
-        
-        # Delete old token and create new one
-        # Since Token has OneToOneField, we must delete before creating new
-        old_token_key = old_token.key
-        old_token.delete()
-        
-        # Create a completely new token with a new key
-        new_token = Token.objects.create(user=user)
-        
-        # Verify the new token is different from the old
-        if new_token.key == old_token_key:
-            # Should never happen but handle edge case
-            new_token.delete()
-            new_token = Token.objects.create(user=user)
-        
+
         return Response(
             {
-                "access_token": new_token.key,
-                "token": new_token.key,
+                "access_token": str(refresh.access_token),
+                "refresh_token": token_string,
             },
             status=status.HTTP_200_OK,
         )

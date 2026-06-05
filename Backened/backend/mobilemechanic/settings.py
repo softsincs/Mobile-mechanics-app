@@ -14,12 +14,34 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 import os
 import sys
+from datetime import timedelta
 
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load local env overrides from .env.local (if present) so python-decouple sees them
+# This lets developers keep local settings like DEBUG and SECURE_SSL_REDIRECT outside VCS.
+_local_env = BASE_DIR / '.env.local'
+if _local_env.exists():
+    try:
+        with open(_local_env, 'r', encoding='utf-8') as _ef:
+            for _line in _ef:
+                _line = _line.strip()
+                if not _line or _line.startswith('#'):
+                    continue
+                if '=' not in _line:
+                    continue
+                _k, _v = _line.split('=', 1)
+                _k = _k.strip()
+                _v = _v.strip().strip('"').strip("'")
+                # Do not override already-exported environment variables
+                if _k and _k not in os.environ:
+                    os.environ[_k] = _v
+    except Exception:
+        # Best-effort loader; don't crash settings import if file malformed
+        pass
 
 def _csv_config(name, default):
     return [item.strip() for item in config(name, default=default).split(',') if item.strip()]
@@ -225,7 +247,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     # Authentication
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     
@@ -276,6 +298,17 @@ REST_FRAMEWORK = {
     
     # Exception Handler
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+}
+
+# ============================================================================
+# SIMPLE JWT CONFIGURATION
+# ============================================================================
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': True,
 }
 
 # ============================================================================

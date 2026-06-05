@@ -4,7 +4,6 @@ Handles user creation and social account linking for Google OAuth.
 """
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from rest_framework.authtoken.models import Token
 from .models import User
 
 
@@ -58,10 +57,6 @@ class CustomSocialAdapter(DefaultSocialAccountAdapter):
         Override to ensure token is created after user creation.
         """
         user = super().save_user(request, sociallogin, form)
-        
-        # Create API token for the newly authenticated user
-        Token.objects.get_or_create(user=user)
-        
         return user
     
     def populate_user(self, request, sociallogin, data):

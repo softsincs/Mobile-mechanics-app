@@ -13,3 +13,5 @@ staticfiles/
 
 # Logs
 logs/
+# Local environment overrides
+.env.local

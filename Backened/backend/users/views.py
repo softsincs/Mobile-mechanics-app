@@ -7,7 +7,7 @@ token refresh.
 
 Endpoints:
 - POST /api/v1/auth/signup/ - Register new user
-- POST /api/v1/auth/login/ - Login with credentials (returns temp token)
+- POST /api/v1/auth/login/ - Login with credentials and get JWT tokens
 - POST /api/v1/auth/send-otp/ - Request OTP email
 - POST /api/v1/auth/verify-otp/ - Verify OTP and get access token
 - POST /api/v1/auth/forgot-password/ - Request password reset
@@ -89,16 +89,15 @@ class SignupView(APIView):
     
     Response:
     {
-        "message": "Verification email sent",
-        "otp_required": true,
-        "temp_token": "temp_token_for_email_verification"
+        "message": "User registered successfully",
+        "user": {...}
     }
     """
 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Register new user and send verification OTP automatically."""
+        """Register new user without OTP verification."""
         serializer = SignupSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -106,29 +105,13 @@ class SignupView(APIView):
 
         user = serializer.save()
 
-        _, _, email_sent = send_verification_otp(user)
-
-        if not email_sent:
-            return Response(
-                {"error": "Verification email could not be sent. Configure EMAIL_WEBHOOK_URL on the server."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        temp_token = secrets.token_urlsafe(32)
-        request.session["otp_user_id"] = str(user.id)
-        request.session["otp_temp_token"] = temp_token
-        request.session["otp_flow_start"] = timezone.now().isoformat()
-        request.session["otp_expires_at"] = (timezone.now() + timedelta(minutes=5)).isoformat()
-
         return Response(
             {
                 "user_id": str(user.id),
                 "phone_number": user.phone_number,
                 "email": user.email,
                 "user": UserSerializer(user).data,
-                "message": "Verification email sent. Please verify your email to continue.",
-                "otp_required": True,
-                "temp_token": temp_token,
+                "message": "User registered successfully.",
             },
             status=status.HTTP_201_CREATED,
         )
@@ -151,17 +134,17 @@ class LoginView(APIView):
         "password": "SecurePass123!"
     }
     
-    Response (First Step):
+    Response:
     {
-        "temp_token": "temp_token_for_otp_verification",
-        "message": "OTP sent to your email"
+        "access_token": "jwt_access_token",
+        "refresh_token": "jwt_refresh_token"
     }
     """
 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Verify credentials and return temporary token for OTP verification."""
+        """Verify credentials and return JWT tokens directly."""
         # Check if account is locked BEFORE validating credentials
         phone = request.data.get("phone_number", "").strip() if request.data.get("phone_number") else None
         email = request.data.get("email", "").strip() if request.data.get("email") else None
@@ -193,34 +176,13 @@ class LoginView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.validated_data["user"]
-
-        if not user.email_verified:
-            return Response(
-                {"detail": "Please verify your email before logging in."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        _, _, email_sent = send_verification_otp(user)
-
-        if not email_sent:
-            return Response(
-                {"error": "OTP email could not be sent. Configure EMAIL_WEBHOOK_URL on the server."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        # Create temporary token for OTP flow
-        temp_token = secrets.token_urlsafe(32)
-        request.session["otp_user_id"] = str(user.id)
-        request.session["otp_temp_token"] = temp_token
-        request.session["otp_flow_start"] = timezone.now().isoformat()
-        request.session["otp_expires_at"] = (timezone.now() + timedelta(minutes=5)).isoformat()
+        token_data = issue_jwt_tokens(user)
 
         return Response(
             {
-                "temp_token": temp_token,
-                "otp_required": True,
-                "expires_at": (timezone.now() + timedelta(minutes=5)).isoformat(),
-                "phone_number": user.phone_number,
+                "message": "Login successful.",
+                "user": UserSerializer(user).data,
+                **token_data,
             },
             status=status.HTTP_200_OK,
         )
